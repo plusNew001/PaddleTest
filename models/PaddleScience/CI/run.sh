@@ -1,40 +1,57 @@
+#!/usr/bin/env bash
+set -e  # 可选：出错立即退出，可去掉如果想继续执行后续测试
+
 # 获取当前工作目录
 home=$PWD
 
-# 运行 api 测试脚本，并获取退出码
+# ===== 1. 运行 API 测试 =====
 cd test_apis
 bash ./run.sh
 api=$?
-echo ${api}
+echo "api exit code: ${api}"
 cd $home
 
-# 运行 examples 测试脚本，并获取退出码
+# ===== 2. 运行 Model/Example 测试 =====
 cd test_models
 bash ./run.sh
 example=$?
-echo ${example}
+echo "example exit code: ${example}"
 cd $home
-# 输出测试结果
+
+# ===== 3. 运行 pytest 测试 =====
+echo "running pytest..."
+pytest_log="pytest_result.txt"
+python -m pytest ../test --maxfail=1 --disable-warnings -q | tee ${pytest_log}
+pytest_ret=${PIPESTATUS[0]}
+echo "pytest exit code: ${pytest_ret}"
+
+# ===== 4. 输出结果汇总 =====
 echo "=============== result ================="
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-if [ `expr ${api} + ${example}` -eq 0 ]; then
-  # 如果两个测试脚本的退出码之和为 0，则说明测试全部通过，输出正确结果并退出程序
-  result=`find . -name "result.txt"`
-  for file in ${result}
-    do
-      cat ${file}
+
+total=$((api + example + pytest_ret))
+
+if [ ${total} -eq 0 ]; then
+  # 全部通过
+  echo "All tests passed!"
+  result_files=$(find . -name "result.txt" -o -name "pytest_result.txt")
+  for file in ${result_files}; do
+      echo "------ ${file} ------"
+      cat "${file}"
       echo "------------------------"
-    done
-  echo "success!"
+  done
+  echo -e "\033[32msuccess!\033[0m"
 else
-  # 如果两个测试脚本的退出码之和不为 0，则说明有测试未通过，输出错误结果并退出程序
-  result=`find $home/ -name "result.txt"`
-  for file in ${result}
-    do
-      cat ${file}
-      echo "--------------------------"
-    done
-  echo "error!"
+  # 有失败
+  echo "Some tests failed!"
+  result_files=$(find . -name "result.txt" -o -name "pytest_result.txt")
+  for file in ${result_files}; do
+      echo "------ ${file} ------"
+      cat "${file}"
+      echo "------------------------"
+  done
+  echo -e "\033[31merror!\033[0m"
 fi
-echo `expr ${api} + ${example}`
-exit `expr ${api} + ${example}`
+
+echo "Total exit code: ${total}"
+exit ${total}
