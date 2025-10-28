@@ -14,7 +14,7 @@ unset http_proxy
 unset https_proxy
 set -xe
 
-export repo_name_all=${repo_name_all:-"PaddleNLP PaddleCustomDevice Paddle PaddleOCR PaddleMIX ERNIE PaddleX FastDeploy"}
+export repo_name_all=${repo_name_all:-"PaddleNLP PaddleFormers PaddleCustomDevice Paddle PaddleOCR PaddleMIX ERNIE PaddleX FastDeploy"}
 # Paddle  需要包含 PaddlePaddle  release 字段，需要打包 develop release/2.3 release/2.4
 # PaddleClas  需要包含 develop  release 字段，需要打包 develop release/2.3 release/2.4 release/2.5
 # PaddleGAN  需要包含 develop  release 字段，需要打包 develop release/2.1
@@ -72,8 +72,8 @@ do
 
     if [[ -d ${repo_name} ]];then
         # 对PaddleNLP增加submodule
-        if [[ ${repo_name} == "PaddleNLP" ]]; then
-            cd PaddleNLP
+        if [[ ${repo_name} == "PaddleNLP" ]] || [[ ${repo_name} == "FastDeploy" ]]; then
+            cd ${repo_name}
             git submodule update --init --recursive
             cd ..
         fi
@@ -101,49 +101,79 @@ do
         git branch -r |while read line
         do
         # Paddle
-        if ([[ $line =~ "release" ]] || [[ $line =~ "develop" ]]) \
+        if ([[ $line =~ "develop" ]] || [[ $line =~ "fleety_20250421" ]]) \
             && [[ ! $line =~ "HEAD" ]] \
-            && [[ ! $line =~ "release/0" ]] \
-            && [[ ! $line =~ "release/lite-0.1" ]] \
-            && [[ ! $line =~ "release/1" ]] \
-            && [[ ! $line =~ "release/2.0" ]] \
-            && [[ ! $line =~ "release/2.1" ]] \
-            && [[ ! $line =~ "release/2.2" ]] \
-            && [[ ! $line =~ "release/2.3-fc-ernie-fix" ]] \
             && [[ ${repo_name} == "Paddle" ]]; then
             tar_reponame
-        # PaddleOCR
-        elif ([[ $line =~ "release" ]] || [[ $line =~ "dygraph" ]]) \
+        # PaddleClas
+        elif [[ $line =~ "develop" ]] \
             && [[ ! $line =~ "HEAD" ]] \
-            && [[ ! $line =~ "release/1.1" ]] \
-            && [[ ! $line =~ "release/2.0-rc1-0" ]] \
-            && [[ ! $line =~ "release/2.0" ]] \
-            && [[ ! $line =~ "release/2.1" ]] \
-            && [[ ! $line =~ "release/2.2" ]] \
-            && [[ ! $line =~ "release/2.3" ]] \
-            && [[ ! $line =~ "revert-7437-dygraph" ]] \
+            && [[ ${repo_name} == "PaddleClas" ]]; then
+            tar_reponame
+        # # PaddleGAN
+        # elif ([[ $line =~ "release" ]] || [[ $line =~ "develop" ]]) \
+        #     && [[ ! $line =~ "HEAD" ]] \
+        #     && [[ ${repo_name} == "PaddleGAN" ]]; then
+        #     tar_reponame
+        # PaddleOCR
+        elif ([[ $line =~ "main" ]] || [[ $line =~ "develop" ]]) \
+            && [[ ! $line =~ "HEAD" ]] \
             && [[ ${repo_name} == "PaddleOCR" ]]; then
+            tar_reponame
+        # PaddleSpeech
+        elif [[ $line =~ "develop" ]] \
+            && [[ ! $line =~ "HEAD" ]] \
+            && [[ ${repo_name} == "PaddleSpeech" ]]; then
+            tar_reponame
+        # Paddle3D
+        elif [[ $line =~ "develop" ]] \
+            && [[ ! $line =~ "HEAD" ]] \
+            && [[ ${repo_name} == "Paddle3D" ]]; then
             tar_reponame
         # PaddleNLP
         elif ([[ $line =~ "release" ]] || [[ $line =~ "develop" ]] \
             || [[ $line =~ "refactor-training-loop" ]] || [[ $line =~ "fleety" ]]) \
             && [[ ! $line =~ "HEAD" ]] \
-            && [[ ! $line =~ "release/2.0" ]] \
-            && [[ ! $line =~ "release/2.1" ]] \
-            && [[ ! $line =~ "release/2.2" ]] \
+            && [[ ! $line =~ "beta" ]] \
+            && [[ ! $line =~ "release/2." ]] \
             && [[ ${repo_name} == "PaddleNLP" ]]; then
             tar_reponame
-        # PaddleX
+        # PaddleFormers
         elif ([[ $line =~ "release" ]] || [[ $line =~ "develop" ]]) \
             && [[ ! $line =~ "HEAD" ]] \
-            && [[ ! $line =~ "release/2" ]] \
+            && [[ ! $line =~ "release/v0.1" ]] \
+            && [[ ! $line =~ "release/v0.2" ]] \
+            && [[ ! $line =~ "release/v0.3" ]] \
+            && [[ ${repo_name} == "PaddleFormers" ]]; then
+            tar_reponame
+        # PaddleDetection
+        elif [[ $line =~ "develop" ]] \
+            && [[ ! $line =~ "HEAD" ]] \
+            && [[ ${repo_name} == "PaddleDetection" ]]; then
+            tar_reponame
+        # PaddleSeg
+        elif [[ $line =~ "develop" ]] \
+            && [[ ! $line =~ "HEAD" ]] \
+            && [[ ${repo_name} == "PaddleSeg" ]]; then
+            tar_reponame
+        # PaddleSlim
+        elif [[ $line =~ "develop" ]] \
+            && [[ ! $line =~ "HEAD" ]] \
+            && [[ ${repo_name} == "PaddleSlim" ]]; then
+            tar_reponame
+        # # PaddleRec
+        # elif ([[ $line =~ "release" ]] || [[ $line =~ "master" ]]) \
+        #     && [[ ! $line =~ "HEAD" ]] \
+        #     && [[ ${repo_name} == "PaddleRec" ]]; then
+        #     tar_reponame
+        # PaddleX
+        elif [[ $line =~ "develop" ]] \
+            && [[ ! $line =~ "HEAD" ]] \
             && [[ ${repo_name} == "PaddleX" ]]; then
             tar_reponame
         # PaddleMIX
-        elif ([[ $line =~ "release" ]] || [[ $line =~ "develop" ]]) \
+        elif [[ $line =~ "develop" ]] \
             && [[ ! $line =~ "HEAD" ]] \
-            && [[ ! $line =~ "upgrade_ppdiffusers0193" ]] \
-            && [[ ! $line =~ "release/0.1" ]] \
             && [[ ${repo_name} == "PaddleMIX" ]]; then
             tar_reponame
         # PaddleCustomDevice
@@ -152,8 +182,12 @@ do
             && [[ ${repo_name} == "PaddleCustomDevice" ]]; then
             tar_reponame
         # FastDeploy
-        elif ([[ $line =~ "release" ]] || [[ $line =~ "develop" ]]) \
+        elif ([[ $line =~ "release" ]] || [[ $line =~ "develop" ]]  || [[ $line =~ "experimental" ]]) \
             && [[ ! $line =~ "HEAD" ]] \
+            && [[ ! $line =~ "online" ]] \
+            && [[ ! $line =~ "release/1.1.0" ]] \
+            && [[ ! $line =~ "release/2.0.0" ]] \
+            && [[ ! $line =~ "release/2.0.1" ]] \
             && [[ ${repo_name} == "FastDeploy" ]]; then
             tar_reponame 
         # ERNIE
